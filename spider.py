@@ -140,7 +140,7 @@ def getData():
             values = genValues(data)
 
             sql = f"insert into spider_dy(username,comment,washtime,url)values {values}"
-            # print(sql)
+            print(sql)
 
             # sql
             gpcon(pg_host, pg_port, pg_user, pg_password, pg_database, sql)
@@ -200,49 +200,52 @@ def threadPro(threadName, counter):
         counter -= 1
 
 #threadflag = 1
-def threadLine():
+def threadLine(threadNum):
     threadflag = 1
-    threadNum = 1
+
     while threadflag:
         if (localTime().minute % NUMMIN == 0)&(localTime().second == 0):
             print(localTime())
             time.sleep(1)
             threadName = 'thread' + str(threadNum)
             threadName = myThread(threadNum, threadName, 1)
-            # if regularTime():
+
             threadName.start()
-            threadNum += 1
+
             threadflag = 0
 
-        else:
-            break
 
 if __name__ == '__main__':
     # 时间输入检测
-    try:
-        startDate, endDate = inputStartEndTime()
-
-    except:
-        print("ERROR:时间有误")
-    else:
-        print("时间输入无误，开始执行程序")
+    # try:
+    #     startDate, endDate = inputStartEndTime()
+    #
+    # except:
+    #     print("ERROR:时间有误")
+    # else:
+    #     print("时间输入无误，开始执行程序")
 
     startDate = localTime() + datetime.timedelta(seconds=10)
+    endDate = startDate+ datetime.timedelta(hours=2)
     print(startDate, endDate)
 
     # if startDate == localTime().date():
     #     startDate = localTime() + datetime.timedelta(seconds=10)
 
     # 时间范围检测
-
+    threadNum = 1
     while 1:
         if localTime().second % TIMESPLIT == 0:
             print(localTime())
+            time.sleep(1)
+        else:
+            pass
 
-        time.sleep(1)
         if localcheck(startDate, endDate) == 0:
             pass
         elif localcheck(startDate, endDate) == 1:
-            threadLine()
+
+            threadLine(threadNum)
+            threadNum += 1
         elif localcheck(startDate, endDate) == 2:
             break
