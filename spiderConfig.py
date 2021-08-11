@@ -1,6 +1,6 @@
 URL = "https://www.douyu.com/606118"
 
-NUMMIN = 2 #每XX分钟一次
+NUMMIN = 15 #每XX分钟一次
 
 DURATION = NUMMIN*60
 TIMESPLIT = 30
