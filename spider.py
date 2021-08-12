@@ -82,13 +82,13 @@ def removeLabel(commentList):
     return comtext
 
 
-def genValues(texts):
+def genValues(texts,washtime):
     values = []
     for text in texts:
         nameword = text.split('：')
         name = nameword[0]
         word = nameword[1]
-        washtime = str(datetime.datetime.now())
+        #washtime = str(datetime.datetime.now())
         values.append([name, word, washtime, URL])
 
     values = str(values).replace('[', '(').replace(']', ')')
@@ -99,7 +99,8 @@ def genValues(texts):
 # 定时
 def regularTime():
     # NUMMIN,Type = regularType(REGULARTYPE)
-    if datetime.datetime.now().minute % NUMMIN == 0:  # NUMMIN
+    if ((localTime().minute % NUMMIN == 0) & (localTime().second == 0)):  # NUMMIN
+    #if (localTime().second % NUMMIN == 0) :  # NUMMIN
         return True
     else:
         return False
@@ -107,6 +108,9 @@ def regularTime():
 
 def getData():
     try:
+        print("打开网页")
+        print(localTime())
+        washtime = str(localTime())
         browser = webdriver.Firefox()
         browser.get(URL)
 
@@ -117,6 +121,7 @@ def getData():
         time.sleep(DURATION)  # 60
 
         comments = browser.find_elements(By.CLASS_NAME, 'Barrage-notice--normalBarrage')
+        print("采集数据")
         commentsList_ = []
         for comment in comments:
             commentsList_.append(comment.text)
@@ -126,7 +131,7 @@ def getData():
         data = removeLabel(commentsList_)
         data = list(set(data))
         print('采集完毕')
-        print(len(data))
+        #print(len(data))
 
 
     except:
@@ -137,7 +142,7 @@ def getData():
             print("无评论")
 
         else:
-            values = genValues(data)
+            values = genValues(data,washtime)
 
             sql = f"insert into spider_dy(username,comment,washtime,url)values {values}"
             print(sql)
@@ -159,19 +164,20 @@ def localcheck(startDate, endDate):
 
 def mainf():
     while True:
-        if localTime().second % TIMESPLIT == 0:
-            print(localTime())
+        # if localTime().second % TIMESPLIT == 0:
+        #     print(localTime())
 
         time.sleep(1)
 
         # 每10分钟开始执行
         if regularTime() is True:
-            if localTime().second % TIMESPLIT == 0:
-                print(localTime())
+            # if localTime().second % TIMESPLIT == 0:
+            #     print(localTime())
             print("程序开始执行")
             print('预计采集', NUMMIN, '秒数据')
             getData()
-
+        else:
+            pass
 
 exitflag = 0
 
@@ -184,35 +190,34 @@ class myThread(threading.Thread):
         self.counter = counter
 
     def run(self):
-        print("开始线程：" + self.name + '\n')
+        print('-------------------')
+        print("开始线程：" + self.name,localTime() )
 
         threadPro(self.name, self.counter)
-        print("结束线程：" + self.name + '\n')
-        print(localTime())
-
+        print("结束线程：" + self.name,localTime())
+        print('-------------------')
 
 def threadPro(threadName, counter):
     while counter:
         if exitflag:
             threadName.exit()
         getData()
-        # print("%s:%s"%(threadName,localTime()))
         counter -= 1
 
-#threadflag = 1
+
+# threadflag = 1
 def threadLine(threadNum):
     threadflag = 1
 
     while threadflag:
-        if (localTime().minute % NUMMIN == 0)&(localTime().second == 0):
-            print(localTime())
-            time.sleep(1)
-            threadName = 'thread' + str(threadNum)
-            threadName = myThread(threadNum, threadName, 1)
+        print(localTime())
+        time.sleep(1)
+        threadName = 'thread' + str(threadNum)
+        threadName = myThread(threadNum, threadName, 1)
 
-            threadName.start()
+        threadName.start()
 
-            threadflag = 0
+        threadflag -= 1
 
 
 if __name__ == '__main__':
@@ -226,26 +231,25 @@ if __name__ == '__main__':
     #     print("时间输入无误，开始执行程序")
 
     startDate = localTime() + datetime.timedelta(seconds=10)
-    endDate = startDate+ datetime.timedelta(hours=2)
-    print(startDate, endDate)
+    endDate = startDate + datetime.timedelta(hours=1)
+    print("开始时间为：",startDate)
+    print("结束时间为：", endDate)
 
     # if startDate == localTime().date():
     #     startDate = localTime() + datetime.timedelta(seconds=10)
 
     # 时间范围检测
-    threadNum = 1
-    while 1:
-        if localTime().second % TIMESPLIT == 0:
-            print(localTime())
-            time.sleep(1)
-        else:
-            pass
 
-        if localcheck(startDate, endDate) == 0:
-            pass
-        elif localcheck(startDate, endDate) == 1:
+    threadNum = 1
+    while localTime() < endDate:
+
+        if regularTime() is True:
 
             threadLine(threadNum)
             threadNum += 1
-        elif localcheck(startDate, endDate) == 2:
-            break
+
+
+        elif regularTime() is False:
+            time.sleep(1)
+
+    print("程序结束")
