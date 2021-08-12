@@ -85,12 +85,15 @@ def removeLabel(commentList):
 def genValues(texts,washtime):
     values = []
     for text in texts:
-        nameword = text.split('：')
-        name = nameword[0]
-        word = nameword[1]
-        #washtime = str(datetime.datetime.now())
-        values.append([name, word, washtime, URL])
-
+        if ':' in text:
+            nameword = text.split('：')
+            name = nameword[0]
+            word = nameword[1]
+            values.append([name, word, washtime, URL])
+        else:
+            name = 'ad'
+            word = text
+            values.append([name, word, washtime, URL])
     values = str(values).replace('[', '(').replace(']', ')')
     values = values[1:-1]
     return values
@@ -143,7 +146,6 @@ def getData():
 
         else:
             values = genValues(data,washtime)
-
             sql = f"insert into spider_cn(username,comment,washtime,url)values {values}"
             print(sql)
 
