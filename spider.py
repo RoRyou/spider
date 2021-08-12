@@ -144,7 +144,7 @@ def getData():
         else:
             values = genValues(data,washtime)
 
-            sql = f"insert into spider_dy(username,comment,washtime,url)values {values}"
+            sql = f"insert into spider_cn(username,comment,washtime,url)values {values}"
             print(sql)
 
             # sql
